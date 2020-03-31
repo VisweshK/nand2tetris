@@ -40,4 +40,25 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+    And16(a=instruction, b=instruction, out[15]=aorc, out[12]=ap, out[11]=c1, out[10]=c2, out[9]=c3, out[8]=c4, out[7]=c5, out[6]=c6, out[5]=d1, out[4]=d2, out[3]=d3, out[2]=j1, out[1]=j2, out[0]=j3);
+    And(a=d3, b=aorc, out=writeM);
+    Mux16(a=instruction, b=aluout, sel=aorc, out=ain);
+    Not(in=aorc, out=naorc);
+    Or(a=d1, b=naorc, out=savea);
+    ARegister(in=ain, load=savea, out=aout, out[0..14]=addressM);
+    And(a=d2, b=aorc, out=saved2);
+    DRegister(in=aluout, load=saved2, out=dout);
+    Mux16(a=aout, b=inM, sel=ap, out=aorm);
+    ALU(x=dout, y=aorm, zx=c1, nx=c2, zy=c3, ny=c4, f=c5, no=c6, out=outM, out=aluout, zr=zr, ng=ng);
+    Not(in=zr, out=nzr);
+    Not(in=ng, out=nng);
+    And(a=nzr, b=nng, out=pos);
+    And(a=ng, b=j1, out=jng);
+    And(a=zr, b=j2, out=jzr);
+    And(a=pos, b=j3, out=jpos);
+    Or(a=jng, b=jzr, out=jngzr);
+    Or(a=jngzr, b=jpos, out=jump1);
+    And(a=jump1, b=aorc, out=jump);
+    Not(in=jump, out=inc);
+    PC(in=aout, load=jump, inc=inc, reset=reset, out[0..14]=pc);
 }
